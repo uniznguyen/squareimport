@@ -43,7 +43,8 @@ cursor.execute('''DROP TABLE IF EXISTS CreditCard_Pivot_Table''')
 #create a new CreditCard_Pivot_Table from credit card table. This calculates sum of net sales, sales taxes, tips, fee, Taxable Sales Value, Non Taxable Sales value
 #this groups by the Deposit ID as the deposit should match what Square deposits hit the bank account
 cursor.execute(''' CREATE TABLE CreditCard_Pivot_Table AS SELECT Date, Sum("Net Sales") As "Total_Net_Sales", Sum("Tax") As "Total_Taxes", 
-round(Sum("Tip"),2) As "Total_Tips",(-Sum("Fees")) As "Total_Fees", sum("Total Collected") As "Total_Collected",Sum("Net Total") AS "Net_Deposit", round((Sum(Tax)/0.0825),2) As Total_Taxable_Sales, 
+round(Sum("Tip"),2) As "Total_Tips",(-Sum("Fees")) As "Total_Fees", sum("Total Collected") As "Total_Collected",Sum("Net Total") AS "Net_Deposit", 
+round((Sum(Tax)/0.0825),2) As Total_Taxable_Sales, 
 round((Sum("Net Sales") - (Sum(Tax)/0.0825)),2) As Total_Non_Taxable_Sales, 
 (round((Sum(Tax)/0.0825),2) + round((Sum("Net Sales") - (Sum(Tax)/0.0825)),2)=Sum("Net Sales")) As "Check_Sum"
 FROM creditcard
