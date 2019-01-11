@@ -4,14 +4,18 @@ from pandas import DataFrame
 import os
 import sqlite3
 
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SquareTransactionPath = os.path.join(BASE_DIR,'transaction.xlsx')
-
 #This is the first Sales Receipt Number to import into Quickbooks. Go to Quickbooks and find the latest sale receipt number, increase that number by one
 #to determine the START_SALESRECEIPT_NUMBER
-
 START_SALESRECEIPT_NUMBER = int(input("Enter sales receipt number: "))
+
+#Input and Output file name
+RAW_SQUARE_TRANSACTIONS = 'transaction.xlsx'
+IMPORT_FILE_NAME = 'SalesReceiptImport.xlsx'
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SquareTransactionPath = os.path.join(BASE_DIR,RAW_SQUARE_TRANSACTIONS)
+
 
 
 #load all rows in Excel to a raw dataframe
@@ -93,6 +97,9 @@ df3 = pd.DataFrame(list(zip(SalesReceiptRefNumber,Sales_Date,Tip_Item,Tip_Values
 #combine 3 dataframes in to one final dataframe
 final_df = pd.concat([df1,df2,df3])
 
+#add a new column called "Quantity" and fill value = 1 across the board
+final_df['Quantity'] = 1
+
 #add a new column called "Customer Name" and fill with "General Customer" value across the board
 final_df['Customer_Name'] = "General Customer"
 
@@ -106,7 +113,7 @@ final_df.sort_values(['SalesReceiptRefNumber'],ascending = [True],inplace = True
 final_df.to_sql('import',con,index = False, if_exists = 'replace')
 
 #create an excel sheet from the final dataframe, ready to import to Quickbooks 
-writer = pd.ExcelWriter("import.xlsx",engine='xlsxwriter')
+writer = pd.ExcelWriter(IMPORT_FILE_NAME,engine='xlsxwriter')
 final_df.to_excel(writer,sheet_name='Sheet1',startcol=0,startrow=0,index=False,header=True,engine='xlsxwriter')
 writer.save()
 
