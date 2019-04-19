@@ -14,12 +14,13 @@ IMPORT_FILE_NAME = 'SalesReceiptImport.xlsx'
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SquareTransactionPath = os.path.join(BASE_DIR,RAW_SQUARE_TRANSACTIONS)
+SQUARE_TRANSACTION_PATH = os.path.join(BASE_DIR,RAW_SQUARE_TRANSACTIONS)
+IMPORT_FILE_PATH = os.path.join(BASE_DIR,IMPORT_FILE_NAME)
 
 
 
 #load all rows in Excel to a raw dataframe
-raw_df = pd.read_excel(SquareTransactionPath)
+raw_df = pd.read_excel(SQUARE_TRANSACTION_PATH)
 
 #drop out unneccessary columns
 raw_df.drop(columns=["Time","Time Zone","Source","Transaction ID","Payment ID","Card Brand","PAN Suffix","Device Name","Staff Name","Staff ID","Details","Description","Event Type","Location","Dining Option","Customer ID","Customer Name","Customer Reference ID","Device Nickname","Deposit Details","Fee Percentage Rate","Fee Fixed Rate"], axis = 1, inplace = True)
@@ -113,7 +114,7 @@ final_df.sort_values(['SalesReceiptRefNumber'],ascending = [True],inplace = True
 final_df.to_sql('import',con,index = False, if_exists = 'replace')
 
 #create an excel sheet from the final dataframe, ready to import to Quickbooks 
-writer = pd.ExcelWriter(IMPORT_FILE_NAME,engine='xlsxwriter')
+writer = pd.ExcelWriter(IMPORT_FILE_PATH,engine='xlsxwriter')
 final_df.to_excel(writer,sheet_name='Sheet1',startcol=0,startrow=0,index=False,header=True,engine='xlsxwriter')
 writer.save()
 
