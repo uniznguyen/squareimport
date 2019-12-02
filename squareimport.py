@@ -47,7 +47,7 @@ cursor.execute('''DROP TABLE IF EXISTS CreditCard_Pivot_Table''')
 
 #create a new CreditCard_Pivot_Table from credit card table. This calculates sum of net sales, sales taxes, tips, fee, Taxable Sales Value, Non Taxable Sales value
 #this groups by the Deposit ID as the deposit should match what Square deposits hit the bank account
-cursor.execute(''' CREATE TABLE CreditCard_Pivot_Table AS SELECT Date, Sum("Net Sales") As "Total_Net_Sales", Sum("Tax") As "Total_Taxes", 
+cursor.execute(''' CREATE TABLE CreditCard_Pivot_Table AS SELECT Date, "Deposit ID" As "Deposit_ID",  Sum("Net Sales") As "Total_Net_Sales", Sum("Tax") As "Total_Taxes", 
 round(Sum("Tip"),2) As "Total_Tips",(-Sum("Fees")) As "Total_Fees", sum("Total Collected") As "Total_Collected",Sum("Net Total") AS "Net_Deposit", 
 round((Sum(Tax)/0.0825),2) As Total_Taxable_Sales, 
 round((Sum("Net Sales") - (Sum(Tax)/0.0825)),2) As Total_Non_Taxable_Sales, 
@@ -57,7 +57,7 @@ GROUP BY "Deposit ID"
 ORDER BY Date ''')
 con.commit()
 
-cursor.execute('''SELECT Date, Total_Taxable_Sales, Total_Non_Taxable_Sales, Total_Tips FROM CreditCard_Pivot_Table''')
+cursor.execute('''SELECT Date, Total_Taxable_Sales, Total_Non_Taxable_Sales, Total_Tips, Deposit_ID FROM CreditCard_Pivot_Table''')
 rows = cursor.fetchall()
 
 
@@ -70,6 +70,7 @@ Tip_Item = []
 Tip_Values = []
 
 SalesReceiptRefNumber = []
+Deposit_ID = []
 
 
 
@@ -86,14 +87,16 @@ for row in rows:
     
     Tip_Item.append("New Tip")
     Tip_Values.append(row[3])
+
+    Deposit_ID.append(row[4])
     
     START_SALESRECEIPT_NUMBER = START_SALESRECEIPT_NUMBER + 1
     
 
 # create 3 dataframes from 3 lists: taxable, non taxable, and tip
-df1 = pd.DataFrame(list(zip(SalesReceiptRefNumber,Sales_Date,Taxable_Item,Taxable_Sales_Values)),columns = ['SalesReceiptRefNumber','Sales_Date','Item','Amount'])
-df2 = pd.DataFrame(list(zip(SalesReceiptRefNumber,Sales_Date,Non_Taxable_Item,Non_Taxable_Sales_Values)),columns = ['SalesReceiptRefNumber','Sales_Date','Item','Amount'])
-df3 = pd.DataFrame(list(zip(SalesReceiptRefNumber,Sales_Date,Tip_Item,Tip_Values)),columns = ['SalesReceiptRefNumber','Sales_Date','Item','Amount'])
+df1 = pd.DataFrame(list(zip(SalesReceiptRefNumber,Sales_Date,Taxable_Item,Taxable_Sales_Values,Deposit_ID)),columns = ['SalesReceiptRefNumber','Sales_Date','Item','Amount','Deposit_ID'])
+df2 = pd.DataFrame(list(zip(SalesReceiptRefNumber,Sales_Date,Non_Taxable_Item,Non_Taxable_Sales_Values,Deposit_ID)),columns = ['SalesReceiptRefNumber','Sales_Date','Item','Amount','Deposit_ID'])
+df3 = pd.DataFrame(list(zip(SalesReceiptRefNumber,Sales_Date,Tip_Item,Tip_Values,Deposit_ID)),columns = ['SalesReceiptRefNumber','Sales_Date','Item','Amount','Deposit_ID'])
 
 #combine 3 dataframes in to one final dataframe
 final_df = pd.concat([df1,df2,df3])
